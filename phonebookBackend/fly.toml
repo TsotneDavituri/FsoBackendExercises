@@ -1,12 +1,12 @@
-# fly.toml file generated for hidden-dawn-2799 on 2023-02-24T08:57:56+01:00
+# fly.toml file generated for averynicephonebook on 2023-02-26T13:52:55+01:00
 
-app = "hidden-dawn-2799"
+app = "averynicephonebook"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
 [env]
-  PORT = "8080"
+PORT = "8080"
 
 [experimental]
   auto_rollback = true

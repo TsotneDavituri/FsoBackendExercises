@@ -1,8 +1,11 @@
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
 const mongoose = require('mongoose')
 
 mongoose.set('strictQuery', false)
 
-const url = process.env.MONGODB_URI
+console.log(process.env, "hello")
+const url = process.env.MONGODB_URI_PHONEBOOK
 
 console.log('connecting to', url)
 
