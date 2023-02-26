@@ -4,7 +4,6 @@ const mongoose = require('mongoose')
 
 mongoose.set('strictQuery', false)
 
-console.log(process.env, "hello")
 const url = process.env.MONGODB_URI_PHONEBOOK
 
 console.log('connecting to', url)
@@ -16,8 +15,22 @@ mongoose.connect(url)
         console.log('error connecting to MongoDB:', error.message)  })
 
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+  name: {
+    type: String,
+    minLength: 3,
+    required: true
+  },
+  number: {
+    type: String,
+    minLength: 8,
+    required: true,
+    validate: {
+      validator: function(v) {
+        return /^(?:\d{2}-\d{6,}|\d{3}-\d{5,}|\d{8,})$/.test(v)
+      },
+      message: props => `${props.value} is not a valid phone number! 8 or more total numbers with a optional hyphen after the first 2-3 numbers`
+    },
+  }
 })
 
 personSchema.set('toJSON', {
