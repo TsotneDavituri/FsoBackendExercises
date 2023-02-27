@@ -13,7 +13,7 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } else if (error.name === 'ValidationError') {    
+  } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
 
@@ -34,7 +34,7 @@ app.get('/api/persons', (request, response, next) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.get('/info', (request, response) => {
@@ -50,7 +50,7 @@ app.get('/info', (request, response) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(deleted => {
+    .then(() => {
       console.log(`User ${request.params.id} deleted`)
       response.status(204).end()
     })
@@ -62,7 +62,7 @@ app.post('/api/persons/', (request, response, next) => {
 
   if (body.name === undefined || body.number === undefined) {
     return response.status(400).json({ error: 'name or number missing' })
-  } 
+  }
 
   const person = new Person({
     name: body.name,
@@ -72,36 +72,36 @@ app.post('/api/persons/', (request, response, next) => {
   person.save().then(result => {
     response.json(result)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
   const body = request.body
 
   Person.findOneAndUpdate(
-    {name: body.name},
-    {$set: {number: body.number}},
-    {new: true, runValidators: true, context: 'query' })
-  .then(updatedPerson => {
-    if (updatedPerson) {
-      response.json(updatedPerson)
-    } else {
-      response.status(404).end()
-    }
-  })
-  .catch(error => next(error))
+    { name: body.name },
+    { $set: { number: body.number } },
+    { new: true, runValidators: true, context: 'query' })
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        response.json(updatedPerson)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
-    Person.findById(request.params.id)
-      .then(person => {
-        if(person) {
-          response.json(person)
-        } else {
-          response.status(404).end()
-        }
-      })
-      .catch(error => next(error))
+  Person.findById(request.params.id)
+    .then(person => {
+      if(person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 app.use(unknownEndpoint)
