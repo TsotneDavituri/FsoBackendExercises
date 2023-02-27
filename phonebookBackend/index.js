@@ -78,7 +78,10 @@ app.post('/api/persons/', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
   const body = request.body
 
-  Person.findOneAndUpdate({name: body.name}, {$set: {number: body.number}}, {new: true})
+  Person.findOneAndUpdate(
+    {name: body.name},
+    {$set: {number: body.number}},
+    {new: true, runValidators: true, context: 'query' })
   .then(updatedPerson => {
     if (updatedPerson) {
       response.json(updatedPerson)
@@ -104,7 +107,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 app.use(unknownEndpoint)
 app.use(errorHandler)
 
-const PORT = 8080
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}, http://localhost:${PORT}/api/persons`)
 })
