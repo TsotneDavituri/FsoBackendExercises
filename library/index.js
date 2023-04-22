@@ -111,11 +111,16 @@ const typeDefs = `
     id: ID!
     born: Int
   }
+  type Query {
+    bookCount: Int!
+    authorCount: Int!
+  }
 `
 
 const resolvers = {
   Query: {
-    dummy: () => 0,
+    bookCount: () => books.length,
+    authorCount: () => authors.length,
   },
 }
 
