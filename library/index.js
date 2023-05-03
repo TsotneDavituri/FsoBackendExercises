@@ -6,6 +6,7 @@ mongoose.set('strictQuery', false)
 const Author = require('./models/author')
 const Book = require('./models/book')
 const author = require('./models/author')
+const { GraphQLError } = require('graphql')
 require('dotenv').config()
 
 const MONGODB_URI = process.env.MONGODB_URI_LIBRARY
@@ -109,7 +110,17 @@ const resolvers = {
   Mutation: {
     addAuthor: async (root, args) => {
       const author = new Author({ ...args })
-      await author.save()
+      try {
+        await author.save()
+      } catch (error) {
+        throw new GraphQLError('Saving author failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.name,
+            error
+          }
+        })
+      }
       return author
     },
     addBook: async (root, args) => {
@@ -117,11 +128,31 @@ const resolvers = {
 
       if (!author) {
         author = new Author({ name: args.author })
-        await author.save()
+        try {
+          await author.save()
+        } catch (error) {
+          throw new GraphQLError('Saving author failed', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.name,
+              error
+            }
+          })
+        }
       }
 
       const book = new Book({ ...args, author: author._id })
-      await book.save()
+      try {
+        await book.save()
+      } catch (error) {
+        throw new GraphQLError('Saving book failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.title,
+            error
+          }
+        })
+      }
 
       return book
     },
@@ -133,9 +164,18 @@ const resolvers = {
       }
 
       author.born = args.setBornTo
-      const updatedAuthor = await author.save()
-
-      return updatedAuthor
+      try {
+        await author.save()
+      } catch (error) {
+        throw new GraphQLError('Editing book failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.name,
+            error
+          }
+        })
+      }
+      return author
     },
   },
 }
