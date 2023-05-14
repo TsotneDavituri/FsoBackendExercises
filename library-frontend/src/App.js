@@ -3,21 +3,28 @@ import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import LoginForm from './components/LoginForm'
-import { useApolloClient } from '@apollo/client'
+import { useApolloClient, useSubscription } from '@apollo/client'
 import Recommendations from './components/Recommendations'
+import { ALL_BOOKS, BOOK_ADDED } from './queries'
 
 const App = () => {
-  const [errorMessage, setErrorMessage] = useState(null)
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
   const client = useApolloClient()
 
-  const notify = message => {
-    setErrorMessage(message)
-    setTimeout(() => {
-      setErrorMessage(null)
-    }, 10000)
-  }
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      console.log(data)
+      window.alert(`${data.data.bookAdded.title} was added`)
+
+      client.cache.updateQuery({ query: ALL_BOOKS }, ({ allBooks }) => {
+        return { allBooks: allBooks.concat(data.data.bookAdded) }
+      })
+    },
+    onError: error => {
+      console.error('Error in subscription:', error)
+    },
+  })
 
   const logout = () => {
     setToken(null)
@@ -52,11 +59,7 @@ const App = () => {
 
       <NewBook show={page === 'add'} />
 
-      <LoginForm
-        show={page === 'login'}
-        setToken={setToken}
-        setError={notify}
-      />
+      <LoginForm show={page === 'login'} setToken={setToken} />
       <Recommendations show={page === 'recommendations'} token={token} />
     </div>
   )
