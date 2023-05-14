@@ -1,12 +1,21 @@
 import { useQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../queries'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const Books = props => {
   const [selectedGenre, setSelectedGenre] = useState('')
   const result = useQuery(ALL_BOOKS)
+  const filteredBooks = useQuery(ALL_BOOKS, {
+    variables: {
+      genre: selectedGenre,
+    },
+  })
 
-  if (result.loading) {
+  useEffect(() => {
+    filteredBooks.refetch()
+  }, [filteredBooks, selectedGenre])
+
+  if (result.loading || filteredBooks.loading) {
     return <div>loading...</div>
   }
   if (!props.show) {
@@ -19,10 +28,6 @@ const Books = props => {
   const books = result.data.allBooks
   const allGenres = [...new Set(books.flatMap(b => b.genres))]
 
-  const filteredBooks = selectedGenre
-    ? books.filter(book => book.genres.includes(selectedGenre))
-    : books
-
   return (
     <div>
       <h2>books</h2>
@@ -33,7 +38,7 @@ const Books = props => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {filteredBooks.map(a => (
+          {filteredBooks.data.allBooks.map(a => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>

@@ -23,6 +23,7 @@ const App = () => {
     setToken(null)
     localStorage.clear()
     client.resetStore()
+    setPage('books')
   }
 
   return (
@@ -56,7 +57,7 @@ const App = () => {
         setToken={setToken}
         setError={notify}
       />
-      <Recommendations show={page === 'recommendations'} />
+      <Recommendations show={page === 'recommendations'} token={token} />
     </div>
   )
 }

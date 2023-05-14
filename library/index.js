@@ -128,7 +128,7 @@ const resolvers = {
     },
     me: (root, args, context) => {
       return context.currentUser
-    }
+    },
   },
   Book: {
     author: async book => {
@@ -147,8 +147,8 @@ const resolvers = {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.name,
-            error
-          }
+            error,
+          },
         })
       }
       return author
@@ -160,7 +160,7 @@ const resolvers = {
         throw new GraphQLError('not authenticated', {
           extensions: {
             code: 'BAD_USER_INPUT',
-          }
+          },
         })
       }
 
@@ -169,17 +169,20 @@ const resolvers = {
       if (!author) {
         author = new Author({ name: args.author })
         try {
+          await author.validate()
           await author.save()
         } catch (error) {
           throw new GraphQLError('Saving author failed', {
             extensions: {
               code: 'BAD_USER_INPUT',
-              invalidArgs: args.name,
-              error
-            }
+              invalidArgs: args.author,
+              error,
+            },
           })
         }
       }
+
+      console.log(args)
 
       const book = new Book({ ...args, author: author._id })
       try {
@@ -189,8 +192,8 @@ const resolvers = {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.title,
-            error
-          }
+            error,
+          },
         })
       }
 
@@ -203,10 +206,9 @@ const resolvers = {
         throw new GraphQLError('not authenticated', {
           extensions: {
             code: 'BAD_USER_INPUT',
-          }
+          },
         })
       }
-
 
       const author = await Author.findOne({ name: args.name })
 
@@ -222,23 +224,26 @@ const resolvers = {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.name,
-            error
-          }
+            error,
+          },
         })
       }
       return author
     },
 
     createUser: async (root, args) => {
-      const user = new User({ username: args.username, favoriteGenre: args.favoriteGenre })
+      const user = new User({
+        username: args.username,
+        favoriteGenre: args.favoriteGenre,
+      })
 
       return user.save().catch(error => {
         throw new GraphQLError('Creating user failed', {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.name,
-            error
-          }
+            error,
+          },
         })
       })
     },
@@ -248,14 +253,14 @@ const resolvers = {
       if (!user || args.password !== 'secret') {
         throw new GraphQLError('wrong credentials', {
           extensions: {
-            code: 'BAD_USER_INPUT' 
-          }
+            code: 'BAD_USER_INPUT',
+          },
         })
       }
 
       const userForToken = {
         username: user.username,
-        id: user._id
+        id: user._id,
       }
 
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
@@ -273,11 +278,8 @@ startStandaloneServer(server, {
   context: async ({ req, res }) => {
     const auth = req ? req.headers.authorization : null
     if (auth && auth.startsWith('Bearer ')) {
-      const decodedToken = jwt.verify(
-        auth.substring(7), process.env.JWT_SECRET
-      )
-      const currentUser = await User
-        .findById(decodedToken.id)
+      const decodedToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET)
+      const currentUser = await User.findById(decodedToken.id)
       return { currentUser }
     }
   },
